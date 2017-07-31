@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
              * 被反射机制加载的类必须有无参数构造方法,否者运行会抛出异常
              */
             Class<?> cls = Class.forName(packageName+".Person");//forName("包名.类名")
-            Person person = (Person) cls.newInstance();
+            Person person = (Person) cls.newInstance();//返回的是一个泛型对象
             person.setName("Sarr");
             person.setAge(18);
             Log.d(TAG,"person.toString():"+person.toString());
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
             setName.invoke(object,"Aimer");//设置调用setName的对象和传入setName的值
             Method setAge = cls1.getDeclaredMethod("setAge",int.class);
             setAge.invoke(object,18);
-            Method[] methods = cls1.getDeclaredMethods();
+            Method[] methods = cls1.getDeclaredMethods();//获取类中所有的方法，无论是public还是private
             for(int i=0;i<methods.length;i++){
                 if(methods[i].getName().equals("toString")){
                     Log.d(TAG,"Object.toString():"+methods[i].invoke(object));
@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
                 Class c = fields[i].getType();// 属性的类型
                 int mod = fields[i].getModifiers();// 属性的修饰域
                 Field field = Class.forName(Person.class.getName()).getDeclaredField(fields[i].getName());// 属性的值
-                field.setAccessible(true); // Very Important
+                field.setAccessible(true); // 如果是 private 或者 package 权限的，一定要赋予其访问权限 Very Important
                 Object value = field.get(Class.forName(Person.class.getName()).newInstance());
 
                 if (value == null) {
@@ -127,8 +127,18 @@ public class MainActivity extends AppCompatActivity {
             }
 
 
+            /**
+             * 修改私有字段的值
+             */
+            Person p1 = new Person();
+            Log.d(TAG,"p1 origin age is "+ p1.getAge());
 
+            Class<?> c = Class.forName(Person.class.getName());
 
+            Field field = c.getDeclaredField("age");
+            field.setAccessible(true);
+            field.set(p1,15);//修改值
+            Log.d(TAG,"after reflect age is "+ p1.getAge());
 
 
 
