@@ -4,7 +4,10 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -53,6 +56,81 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG,"Object.toString():"+methods[i].invoke(object));
                 }
             }
+
+
+            /**
+             * 获取当前类所有构造方法修饰域和方法名称和参数类型
+             */
+            Constructor[] constructors = Class.forName(Person.class.getName()).getDeclaredConstructors();//返回该类中所有的构造函数数组（不分public和非public属性）
+            for(int i=0;i<constructors.length;i++){
+
+                int mod = constructors[i].getModifiers();//获取修饰域和方法名称
+                Log.d(TAG, "Modifier.toString(mod):"+Modifier.toString(mod)+","+ Person.class.getName());//public, 包名.类名（方法名称）
+
+                Class[] parameterTypes = constructors[i].getParameterTypes();//获取指定构造方法的参数的集合
+                for(int j=0;j<parameterTypes.length;j++){
+                    Log.d(TAG, "parameterTypes[j].getName():"+parameterTypes[j].getName());
+                    if(parameterTypes.length > j+1){
+                        Log.d(TAG, ",");
+                    }
+                }
+            }
+
+            /**
+             * 获取当前类的所有方法
+             *
+             * 注意: 方法getDeclaredMethods()只能获取到由当前类定义的所有方法，不能获取从父类继承的方法
+             * 方法getMethods() 不仅能获取到当前类定义的public方法，也能得到从父类继承和已经实现接口的public方法
+             * 请查阅开发文档对这两个方法的详细描述。
+             */
+            Method[] methods1 = Class.forName(Person.class.getName()).getDeclaredMethods();
+            for(int i=0;i<methods1.length;i++){
+                int mod = methods1[i].getModifiers();//打印输出方法的修饰域
+                Log.d(TAG, "getMethod---Modifier.toString(mod):"+Modifier.toString(mod));
+
+                String returnType = methods1[i].getReturnType().getName();// 输出方法的返回类型
+                Log.d(TAG, "methods1["+i+"].getReturnType().getName():"+methods1[i].getReturnType().getName());
+
+                String methodName = methods1[i].getName();// 获取输出的方法名
+                Log.d(TAG, "methods1["+i+"].getName():"+methods1[i].getName());
+
+                Class[] parameterTypes = methods1[i].getParameterTypes();
+                for(int j=0;j<parameterTypes.length;j++){
+                    Log.d(TAG, "getMethod---parameterTypes[j].getName():"+parameterTypes[j].getName());
+                    if(parameterTypes.length > j+1){
+                        Log.d(TAG, ",");
+                    }
+                }
+
+            }
+
+            /**
+             * 获取当前类的成员变量
+             *
+             * 注意: 对于未初始化的指针类型的属性，将不输出结果。
+             */
+            Field[] fields = Class.forName(Person.class.getName()).getDeclaredFields();
+            for(int i=0;i<fields.length;i++){
+
+                Class c = fields[i].getType();// 属性的类型
+                int mod = fields[i].getModifiers();// 属性的修饰域
+                Field field = Class.forName(Person.class.getName()).getDeclaredField(fields[i].getName());// 属性的值
+                field.setAccessible(true); // Very Important
+                Object value = field.get(Class.forName(Person.class.getName()).newInstance());
+
+                if (value == null) {
+                    Log.d(TAG,"getDeclaredFields():"+Modifier.toString(mod) + " " + c + " : "      + fields[i].getName());
+                }
+                else {
+                    Log.d(TAG,"getDeclaredFields():"+Modifier.toString(mod) + " " + c + " : "  + fields[i].getName() + " = " + value.toString());
+                }
+            }
+
+
+
+
+
+
 
         } catch (Exception e) {
             e.printStackTrace();
